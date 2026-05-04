@@ -31,7 +31,7 @@ If bank holidays stop showing (and only the December closed days appear), it mos
    ```javascript
    const res = await fetch('https://www.gov.uk/bank-holidays.json');
    ```
-3. Visit [https://www.gov.uk/bank-holidays](https://www.gov.uk/bank-holidays) in a browser to find the correct current API URL, and update line 657 accordingly
+3. To find the correct current URL, go to [https://www.gov.uk/bank-holidays](https://www.gov.uk/bank-holidays) in a browser, open the developer tools (F12), go to the **Network** tab, reload the page, and filter for `bank-holidays` — any JSON feed the page uses will appear there. Update line 657 with the new URL.
 4. Commit and push the change — GitHub Pages will redeploy automatically within a minute or two
 
 ## Repo structure
