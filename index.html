@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Closed Day Calculator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f5f5f5;
+      color: #222;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .subtitle {
+      color: #666;
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .card h2 {
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #444;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-size: 0.8rem;
+    }
+
+    .hint {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 0.85rem;
+    }
+
+    /* Leave year selector */
+    .leave-year-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .leave-year-row button {
+      background: none;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 0.4rem 0.8rem;
+      cursor: pointer;
+      font-size: 1rem;
+      color: #444;
+      transition: background 0.15s;
+    }
+
+    .leave-year-row button:hover { background: #f0f0f0; }
+
+    .leave-year-label {
+      font-size: 1.05rem;
+      font-weight: 600;
+      min-width: 140px;
+      text-align: center;
+    }
+
+    /* Rotation toggle */
+    .rotation-toggle {
+      display: inline-flex;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .rotation-btn {
+      padding: 0.5rem 1.1rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+      color: #555;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .rotation-btn + .rotation-btn {
+      border-left: 1px solid #ddd;
+    }
+
+    .rotation-btn.active {
+      background: #4a7cdc;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* Hours grid */
+    .week-label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    .week-label + .hours-grid { margin-bottom: 1rem; }
+
+    .hours-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.75rem;
+    }
+
+    .hours-grid label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.85rem;
+      color: #555;
+      font-weight: 500;
+    }
+
+    .hours-grid input[type="number"] {
+      width: 100%;
+      padding: 0.5rem 0.4rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 1rem;
+      text-align: center;
+      transition: border-color 0.15s;
+    }
+
+    .hours-grid input[type="number"]:focus {
+      outline: none;
+      border-color: #4a7cdc;
+    }
+
+    .contracted-total {
+      margin-top: 0.75rem;
+      font-size: 0.9rem;
+      color: #666;
+      text-align: right;
+    }
+
+    .contracted-total strong { color: #222; }
+
+    /* Reference date */
+    .ref-date-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .ref-date-row label {
+      font-size: 0.88rem;
+      color: #555;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .ref-date-row input[type="date"] {
+      padding: 0.4rem 0.6rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 0.88rem;
+    }
+
+    .ref-date-hint {
+      font-size: 0.78rem;
+      color: #aaa;
+    }
+
+    /* Closed days list */
+    .closed-days-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .closed-day-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      background: #f9f9f9;
+      border: 1px solid #eee;
+    }
+
+    .closed-day-item .day-info { flex: 1; }
+
+    .closed-day-item .day-date {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .closed-day-item .day-name {
+      font-size: 0.8rem;
+      color: #888;
+    }
+
+    .closed-day-item .day-rotation {
+      font-size: 0.75rem;
+      color: #aaa;
+      font-style: italic;
+    }
+
+    .closed-day-item .day-label {
+      font-size: 0.8rem;
+      color: #666;
+      flex: 2;
+    }
+
+    .tag {
+      font-size: 0.7rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 99px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .tag-bh     { background: #e8f0fe; color: #3c63cc; }
+    .tag-closed { background: #fce8e8; color: #c0392b; }
+    .tag-custom { background: #e8fce8; color: #27ae60; }
+
+    .remove-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #bbb;
+      font-size: 1.1rem;
+      line-height: 1;
+      padding: 0.1rem 0.3rem;
+      border-radius: 4px;
+      transition: color 0.15s;
+    }
+
+    .remove-btn:hover { color: #e74c3c; }
+
+    .add-date-row {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .add-date-row input[type="date"],
+    .add-date-row input[type="text"] {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+
+    .add-date-row input[type="text"] {
+      flex: 1;
+      min-width: 160px;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      border: none;
+      font-size: 0.9rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.15s;
+    }
+
+    .btn-secondary { background: #eee; color: #444; }
+    .btn-secondary:hover { background: #ddd; }
+
+    .error-msg {
+      color: #c0392b;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+
+    .empty-msg {
+      color: #aaa;
+      font-size: 0.88rem;
+      font-style: italic;
+      padding: 0.5rem 0;
+    }
+
+    .loading {
+      color: #888;
+      font-size: 0.9rem;
+      font-style: italic;
+    }
+
+    /* Result */
+    .result-box {
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      text-align: center;
+    }
+
+    .result-box.owed    { background: #e8f5e9; border: 1px solid #a5d6a7; }
+    .result-box.owes    { background: #fff3e0; border: 1px solid #ffcc80; }
+    .result-box.neutral { background: #f5f5f5; border: 1px solid #ddd; }
+
+    .result-box .result-amount {
+      font-size: 2.2rem;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .result-box.owed .result-amount    { color: #2e7d32; }
+    .result-box.owes .result-amount    { color: #e65100; }
+    .result-box.neutral .result-amount { color: #555; }
+
+    .result-box .result-label  { font-size: 0.95rem; margin-top: 0.4rem; color: #555; }
+    .result-box .result-detail { font-size: 0.8rem; color: #888; margin-top: 0.5rem; }
+
+    .result-breakdown {
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      color: #666;
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .result-breakdown span strong { color: #333; }
+
+    @media (max-width: 480px) {
+      .hours-grid { gap: 0.4rem; }
+      .add-date-row { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Closed Day Calculator</h1>
+  <p class="subtitle">Find out whether you are owed additional annual leave in lieu of public and closed holidays.</p>
+
+  <!-- Leave Year -->
+  <div class="card">
+    <h2>Leave Year</h2>
+    <div class="leave-year-row">
+      <button id="prevYear">&#8592;</button>
+      <span class="leave-year-label" id="leaveYearLabel"></span>
+      <button id="nextYear">&#8594;</button>
+    </div>
+  </div>
+
+  <!-- Rotation Type -->
+  <div class="card">
+    <h2>Rotation Type</h2>
+    <div class="rotation-toggle">
+      <button class="rotation-btn active" id="rotOneWeek">One-week rotation</button>
+      <button class="rotation-btn" id="rotTwoWeek">Two-week rotation</button>
+    </div>
+  </div>
+
+  <!-- Contracted Hours -->
+  <div class="card">
+    <h2>Your Contracted Hours</h2>
+    <p class="hint">Enter how many hours you are contracted to work each day. Enter 0 for days you don't work.</p>
+
+    <!-- One-week -->
+    <div id="oneWeekSection">
+      <div class="hours-grid">
+        <label>Mon <input type="number" id="h-mon" min="0" max="24" step="0.5" value="0"></label>
+        <label>Tue <input type="number" id="h-tue" min="0" max="24" step="0.5" value="0"></label>
+        <label>Wed <input type="number" id="h-wed" min="0" max="24" step="0.5" value="0"></label>
+        <label>Thu <input type="number" id="h-thu" min="0" max="24" step="0.5" value="0"></label>
+        <label>Fri <input type="number" id="h-fri" min="0" max="24" step="0.5" value="0"></label>
+      </div>
+      <p class="contracted-total">
+        Weekly total: <strong id="weeklyTotal1">0</strong> hrs &nbsp;|&nbsp; FTE: <strong id="fteDisplay1">0%</strong>
+      </p>
+    </div>
+
+    <!-- Two-week -->
+    <div id="twoWeekSection" style="display:none">
+      <div class="week-label">Week 1</div>
+      <div class="hours-grid">
+        <label>Mon <input type="number" id="h2-w1-mon" min="0" max="24" step="0.5" value="0"></label>
+        <label>Tue <input type="number" id="h2-w1-tue" min="0" max="24" step="0.5" value="0"></label>
+        <label>Wed <input type="number" id="h2-w1-wed" min="0" max="24" step="0.5" value="0"></label>
+        <label>Thu <input type="number" id="h2-w1-thu" min="0" max="24" step="0.5" value="0"></label>
+        <label>Fri <input type="number" id="h2-w1-fri" min="0" max="24" step="0.5" value="0"></label>
+      </div>
+
+      <div class="week-label">Week 2</div>
+      <div class="hours-grid">
+        <label>Mon <input type="number" id="h2-w2-mon" min="0" max="24" step="0.5" value="0"></label>
+        <label>Tue <input type="number" id="h2-w2-tue" min="0" max="24" step="0.5" value="0"></label>
+        <label>Wed <input type="number" id="h2-w2-wed" min="0" max="24" step="0.5" value="0"></label>
+        <label>Thu <input type="number" id="h2-w2-thu" min="0" max="24" step="0.5" value="0"></label>
+        <label>Fri <input type="number" id="h2-w2-fri" min="0" max="24" step="0.5" value="0"></label>
+      </div>
+
+      <p class="contracted-total">
+        Week 1: <strong id="weeklyTotal2w1">0</strong> hrs &nbsp;|&nbsp;
+        Week 2: <strong id="weeklyTotal2w2">0</strong> hrs &nbsp;|&nbsp;
+        Average: <strong id="weeklyTotal2avg">0</strong> hrs &nbsp;|&nbsp;
+        FTE: <strong id="fteDisplay2">0%</strong>
+      </p>
+
+      <div class="ref-date-row">
+        <label>
+          Rotation start (Week 1):
+          <input type="date" id="refDateInput">
+        </label>
+        <span class="ref-date-hint">Pre-populated with the Monday of the week containing 1 Oct</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="card">
+    <h2>Result</h2>
+    <div id="resultBox" class="result-box neutral">
+      <div class="result-amount" id="resultAmount">—</div>
+      <div class="result-label" id="resultLabel">Enter your contracted hours above to see your result.</div>
+      <div class="result-detail" id="resultDetail"></div>
+      <div class="result-breakdown" id="resultBreakdown"></div>
+    </div>
+  </div>
+
+  <!-- Closed Days -->
+  <div class="card">
+    <h2>Closed Days</h2>
+    <p class="hint">Bank holidays and university closed days for this leave year. You can remove dates that don't apply or add additional closed days.</p>
+    <div class="closed-days-list" id="closedDaysList"></div>
+    <div class="add-date-row">
+      <input type="date" id="addDateInput">
+      <input type="text" id="addDateLabel" placeholder="Label (optional)">
+      <button class="btn btn-secondary" id="addDateBtn">+ Add date</button>
+    </div>
+    <p class="error-msg" id="addDateError" style="display:none;"></p>
+  </div>
+</div>
+
+<script>
+  // ── Constants & state ─────────────────────────────────────────────────────────
+
+  const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const FT_HOURS = 35;
+
+  // Leave year: 1 Oct – 30 Sep. leaveYearStart is the Oct year.
+  // e.g. 2025 → 1 Oct 2025 – 30 Sep 2026
+  let leaveYearStart = currentLeaveYearStart();
+  let rotationMode = 'one'; // 'one' | 'two'
+  let closedDays = []; // { dateStr, label, type }
+  let cachedBankHolidays = null;
+
+  // ── Leave year helpers ────────────────────────────────────────────────────────
+
+  function currentLeaveYearStart() {
+    const today = new Date();
+    return today.getMonth() >= 9 ? today.getFullYear() : today.getFullYear() - 1;
+  }
+
+  function leaveYearLabel(start) {
+    return `${start}/${String(start + 1).slice(2)}`;
+  }
+
+  function leaveYearRange(start) {
+    return {
+      from: new Date(start, 9, 1),      // 1 Oct
+      to:   new Date(start + 1, 8, 30)  // 30 Sep
+    };
+  }
+
+  // ── Leave year UI ─────────────────────────────────────────────────────────────
+
+  function renderLeaveYearLabel() {
+    document.getElementById('leaveYearLabel').textContent = leaveYearLabel(leaveYearStart);
+  }
+
+  document.getElementById('prevYear').addEventListener('click', () => {
+    leaveYearStart--;
+    onLeaveYearChange();
+  });
+
+  document.getElementById('nextYear').addEventListener('click', () => {
+    leaveYearStart++;
+    onLeaveYearChange();
+  });
+
+  function onLeaveYearChange() {
+    renderLeaveYearLabel();
+    updateRefDate();
+    closedDays = [];
+    populateClosedDays();
+  }
+
+  // ── Rotation toggle ───────────────────────────────────────────────────────────
+
+  document.getElementById('rotOneWeek').addEventListener('click', () => setRotation('one'));
+  document.getElementById('rotTwoWeek').addEventListener('click', () => setRotation('two'));
+
+  function setRotation(mode) {
+    rotationMode = mode;
+    document.getElementById('rotOneWeek').classList.toggle('active', mode === 'one');
+    document.getElementById('rotTwoWeek').classList.toggle('active', mode === 'two');
+    document.getElementById('oneWeekSection').style.display = mode === 'one' ? '' : 'none';
+    document.getElementById('twoWeekSection').style.display = mode === 'two' ? '' : 'none';
+    renderClosedDays();
+    recalculate();
+  }
+
+  // ── Reference date (two-week rotation) ───────────────────────────────────────
+
+  function getMondayOfWeek(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    d.setDate(d.getDate() + diff);
+    return d;
+  }
+
+  function toDateStr(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  function defaultRefDate(yearStart) {
+    // Monday of the week containing 1 Oct of yearStart
+    return getMondayOfWeek(new Date(yearStart, 9, 1));
+  }
+
+  function updateRefDate() {
+    document.getElementById('refDateInput').value = toDateStr(defaultRefDate(leaveYearStart));
+  }
+
+  document.getElementById('refDateInput').addEventListener('change', recalculate);
+
+  // Which rotation week (1 or 2) does a given date fall in?
+  function getRotation(dateStr) {
+    const refStr = document.getElementById('refDateInput').value;
+    if (!refStr) return 1;
+    const monday = getMondayOfWeek(parseDate(dateStr));
+    const ref = parseDate(refStr);
+    const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+    const weeksDiff = Math.round((monday - ref) / msPerWeek);
+    // ref week → rotation 1; next week → rotation 2; alternating
+    return ((weeksDiff % 2) + 2) % 2 === 0 ? 1 : 2;
+  }
+
+  // ── Hours inputs ──────────────────────────────────────────────────────────────
+
+  function bindHourInputs(ids) {
+    ids.forEach(id => {
+      document.getElementById(id).addEventListener('input', () => {
+        updateHoursSummary();
+        recalculate();
+      });
+    });
+  }
+
+  bindHourInputs(['h-mon','h-tue','h-wed','h-thu','h-fri']);
+  bindHourInputs(['h2-w1-mon','h2-w1-tue','h2-w1-wed','h2-w1-thu','h2-w1-fri']);
+  bindHourInputs(['h2-w2-mon','h2-w2-tue','h2-w2-wed','h2-w2-thu','h2-w2-fri']);
+
+  function getOneWeekHours() {
+    return {
+      mon: parseFloat(document.getElementById('h-mon').value) || 0,
+      tue: parseFloat(document.getElementById('h-tue').value) || 0,
+      wed: parseFloat(document.getElementById('h-wed').value) || 0,
+      thu: parseFloat(document.getElementById('h-thu').value) || 0,
+      fri: parseFloat(document.getElementById('h-fri').value) || 0,
+    };
+  }
+
+  function getTwoWeekHours() {
+    const w = (prefix) => ({
+      mon: parseFloat(document.getElementById(`${prefix}-mon`).value) || 0,
+      tue: parseFloat(document.getElementById(`${prefix}-tue`).value) || 0,
+      wed: parseFloat(document.getElementById(`${prefix}-wed`).value) || 0,
+      thu: parseFloat(document.getElementById(`${prefix}-thu`).value) || 0,
+      fri: parseFloat(document.getElementById(`${prefix}-fri`).value) || 0,
+    });
+    return { w1: w('h2-w1'), w2: w('h2-w2') };
+  }
+
+  function sumHours(h) {
+    return h.mon + h.tue + h.wed + h.thu + h.fri;
+  }
+
+  function hoursForDay(dayIndex, h) {
+    // dayIndex: JS getDay() — 1=Mon … 5=Fri
+    const map = { 1: h.mon, 2: h.tue, 3: h.wed, 4: h.thu, 5: h.fri };
+    return map[dayIndex] ?? 0;
+  }
+
+  function colourIfOver(el, value, max) {
+    el.style.color = value > max ? '#c0392b' : '';
+  }
+
+  function updateHoursSummary() {
+    if (rotationMode === 'one') {
+      const h = getOneWeekHours();
+      const total = sumHours(h);
+      const fte = (total / FT_HOURS * 100).toFixed(1);
+      const totalEl = document.getElementById('weeklyTotal1');
+      const fteEl   = document.getElementById('fteDisplay1');
+      totalEl.textContent = fmt(total);
+      fteEl.textContent   = `${fte}%`;
+      colourIfOver(totalEl, total, FT_HOURS);
+      colourIfOver(fteEl,   total, FT_HOURS);
+    } else {
+      const { w1, w2 } = getTwoWeekHours();
+      const t1  = sumHours(w1);
+      const t2  = sumHours(w2);
+      const avg = (t1 + t2) / 2;
+      const fte = (avg / FT_HOURS * 100).toFixed(1);
+      const t1El  = document.getElementById('weeklyTotal2w1');
+      const t2El  = document.getElementById('weeklyTotal2w2');
+      const avgEl = document.getElementById('weeklyTotal2avg');
+      const fteEl = document.getElementById('fteDisplay2');
+      t1El.textContent  = fmt(t1);
+      t2El.textContent  = fmt(t2);
+      avgEl.textContent = fmt(avg);
+      fteEl.textContent = `${fte}%`;
+      colourIfOver(avgEl, avg, FT_HOURS);
+      colourIfOver(fteEl, avg, FT_HOURS);
+    }
+  }
+
+  function fmt(n) { return n % 1 === 0 ? String(n) : n.toFixed(1); }
+
+  // ── Bank holidays ─────────────────────────────────────────────────────────────
+
+  async function fetchBankHolidays() {
+    if (cachedBankHolidays) return cachedBankHolidays;
+    const res = await fetch('https://www.gov.uk/bank-holidays.json');
+    if (!res.ok) throw new Error('Could not fetch bank holidays');
+    const data = await res.json();
+    cachedBankHolidays = data['england-and-wales'].events;
+    return cachedBankHolidays;
+  }
+
+  async function populateClosedDays() {
+    const listEl = document.getElementById('closedDaysList');
+    listEl.innerHTML = '<p class="loading">Loading bank holidays…</p>';
+
+    const { from, to } = leaveYearRange(leaveYearStart);
+
+    try {
+      const events = await fetchBankHolidays();
+
+      const bh = events
+        .filter(e => { const d = parseDate(e.date); return d >= from && d <= to; })
+        .map(e => ({ dateStr: e.date, label: e.title, type: 'bh' }));
+
+      // Dec 27–31 university closed days
+      const closedFixed = [];
+      for (let yr = leaveYearStart; yr <= leaveYearStart + 1; yr++) {
+        for (let day = 27; day <= 31; day++) {
+          const dateStr = `${yr}-12-${String(day).padStart(2,'0')}`;
+          const d = parseDate(dateStr);
+          if (d >= from && d <= to && !bh.find(b => b.dateStr === dateStr)) {
+            closedFixed.push({ dateStr, label: 'University closed day', type: 'closed' });
+          }
+        }
+      }
+
+      closedDays = [...bh, ...closedFixed].sort((a, b) => a.dateStr.localeCompare(b.dateStr));
+
+    } catch (e) {
+      listEl.innerHTML = `<p class="error-msg">Could not load bank holidays: ${e.message}. You can add dates manually below.</p>`;
+      closedDays = buildFallbackClosedDays();
+    }
+
+    renderClosedDays();
+    recalculate();
+  }
+
+  function buildFallbackClosedDays() {
+    const { from, to } = leaveYearRange(leaveYearStart);
+    const result = [];
+    for (let yr = leaveYearStart; yr <= leaveYearStart + 1; yr++) {
+      for (let day = 27; day <= 31; day++) {
+        const dateStr = `${yr}-12-${String(day).padStart(2,'0')}`;
+        const d = parseDate(dateStr);
+        if (d >= from && d <= to) result.push({ dateStr, label: 'University closed day', type: 'closed' });
+      }
+    }
+    return result;
+  }
+
+  // ── Render closed days ────────────────────────────────────────────────────────
+
+  function renderClosedDays() {
+    const listEl = document.getElementById('closedDaysList');
+    const isTwoWeek = rotationMode === 'two';
+
+    if (closedDays.length === 0) {
+      listEl.innerHTML = '<p class="empty-msg">No closed days added yet.</p>';
+      return;
+    }
+
+    listEl.innerHTML = closedDays.map((cd, i) => {
+      const d = parseDate(cd.dateStr);
+      const dayName = DAYS[d.getDay()];
+      const dateFormatted = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      const tagClass = cd.type === 'bh' ? 'tag-bh' : cd.type === 'closed' ? 'tag-closed' : 'tag-custom';
+      const tagLabel = cd.type === 'bh' ? 'Bank holiday' : cd.type === 'closed' ? 'Closed day' : 'Custom';
+      const rotLabel = isTwoWeek && (d.getDay() >= 1 && d.getDay() <= 5)
+        ? `<div class="day-rotation">Week ${getRotation(cd.dateStr)}</div>` : '';
+      return `
+        <div class="closed-day-item">
+          <div class="day-info">
+            <div class="day-date">${dateFormatted}</div>
+            <div class="day-name">${dayName}</div>
+            ${rotLabel}
+          </div>
+          <div class="day-label">${cd.label || ''}</div>
+          <span class="tag ${tagClass}">${tagLabel}</span>
+          <button class="remove-btn" data-index="${i}" title="Remove">&#x2715;</button>
+        </div>`;
+    }).join('');
+
+    listEl.querySelectorAll('.remove-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        closedDays.splice(Number(btn.dataset.index), 1);
+        renderClosedDays();
+        recalculate();
+      });
+    });
+  }
+
+  // ── Add custom date ───────────────────────────────────────────────────────────
+
+  document.getElementById('addDateBtn').addEventListener('click', () => {
+    const input    = document.getElementById('addDateInput');
+    const lblInput = document.getElementById('addDateLabel');
+    const errEl    = document.getElementById('addDateError');
+    errEl.style.display = 'none';
+
+    const dateStr = input.value;
+    if (!dateStr) { showErr(errEl, 'Please select a date.'); return; }
+
+    const { from, to } = leaveYearRange(leaveYearStart);
+    const d = parseDate(dateStr);
+    if (d < from || d > to) {
+      showErr(errEl, `Date must be within the ${leaveYearLabel(leaveYearStart)} leave year (1 Oct ${leaveYearStart} – 30 Sep ${leaveYearStart+1}).`);
+      return;
+    }
+    if (closedDays.find(cd => cd.dateStr === dateStr)) { showErr(errEl, 'That date is already in the list.'); return; }
+    const dow = d.getDay();
+    if (dow === 0 || dow === 6) { showErr(errEl, 'That date falls on a weekend — only weekdays count as closed days.'); return; }
+
+    closedDays.push({ dateStr, label: lblInput.value.trim() || 'Custom closed day', type: 'custom' });
+    closedDays.sort((a, b) => a.dateStr.localeCompare(b.dateStr));
+    input.value = '';
+    lblInput.value = '';
+    renderClosedDays();
+    recalculate();
+  });
+
+  function showErr(el, msg) { el.textContent = msg; el.style.display = 'block'; }
+
+  // ── Calculation ───────────────────────────────────────────────────────────────
+
+  function recalculate() {
+    const resultBox       = document.getElementById('resultBox');
+    const resultAmount    = document.getElementById('resultAmount');
+    const resultLabel     = document.getElementById('resultLabel');
+    const resultDetail    = document.getElementById('resultDetail');
+    const resultBreakdown = document.getElementById('resultBreakdown');
+
+    function showNeutral(msg) {
+      resultBox.className = 'result-box neutral';
+      resultAmount.textContent = '—';
+      resultLabel.textContent = msg;
+      resultDetail.textContent = '';
+      resultBreakdown.innerHTML = '';
+    }
+
+    // Gather hours and check they're non-zero
+    let avgWeekly, getActualHours;
+
+    if (rotationMode === 'one') {
+      const h = getOneWeekHours();
+      avgWeekly = sumHours(h);
+      if (avgWeekly === 0) { showNeutral('Enter your contracted hours above to see your result.'); return; }
+      getActualHours = (cd) => hoursForDay(parseDate(cd.dateStr).getDay(), h);
+    } else {
+      const { w1, w2 } = getTwoWeekHours();
+      const t1 = sumHours(w1), t2 = sumHours(w2);
+      avgWeekly = (t1 + t2) / 2;
+      if (avgWeekly === 0) { showNeutral('Enter your contracted hours above to see your result.'); return; }
+      getActualHours = (cd) => {
+        const rot = getRotation(cd.dateStr);
+        return hoursForDay(parseDate(cd.dateStr).getDay(), rot === 1 ? w1 : w2);
+      };
+    }
+
+    const weekdayClosedDays = closedDays.filter(cd => {
+      const dow = parseDate(cd.dateStr).getDay();
+      return dow >= 1 && dow <= 5;
+    });
+
+    if (weekdayClosedDays.length === 0) { showNeutral('No closed days in this leave year yet.'); return; }
+
+    const fte = avgWeekly / FT_HOURS;
+    const hoursPerClosedDay = 7 * fte;
+    const fairEntitlementHours = weekdayClosedDays.length * hoursPerClosedDay;
+    const actualHours = weekdayClosedDays.reduce((sum, cd) => sum + getActualHours(cd), 0);
+    const diffHours = fairEntitlementHours - actualHours;
+    const diffDaysRounded = Math.ceil((diffHours / 7) * 2) / 2;
+    const abs = Math.abs(diffDaysRounded);
+    const dayWord = abs === 1 ? 'day' : 'days';
+
+    if (abs === 0) {
+      resultBox.className = 'result-box neutral';
+      resultAmount.textContent = '0 days';
+      resultLabel.textContent = 'You are neither owed leave nor over-benefited. All square!';
+      resultDetail.textContent = '';
+    } else if (diffDaysRounded > 0) {
+      resultBox.className = 'result-box owed';
+      resultAmount.textContent = `+${abs} ${dayWord}`;
+      resultLabel.textContent = `You are owed ${abs} ${dayWord} of additional annual leave.`;
+      resultDetail.textContent = `Because you miss out on some closed days that fall on days you don't work, you should receive extra leave to compensate.`;
+    } else {
+      resultBox.className = 'result-box owes';
+      resultAmount.textContent = `−${abs} ${dayWord}`;
+      resultLabel.textContent = `You have over-benefited by ${abs} ${dayWord}.`;
+      resultDetail.textContent = `You benefit from more closed days than your fair pro-rata share, so your annual leave entitlement may be reduced accordingly.`;
+    }
+
+    resultBreakdown.innerHTML = `
+      <span>Closed days: <strong>${weekdayClosedDays.length}</strong></span>
+      <span>Fair share: <strong>${fairEntitlementHours.toFixed(2)} hrs</strong></span>
+      <span>Actual benefit: <strong>${actualHours.toFixed(2)} hrs</strong></span>
+      <span>Difference: <strong>${diffHours >= 0 ? '+' : ''}${diffHours.toFixed(2)} hrs</strong></span>
+    `;
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────────
+
+  function parseDate(str) {
+    const [y, m, d] = str.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────────────────
+
+  renderLeaveYearLabel();
+  updateRefDate();
+  updateHoursSummary();
+  populateClosedDays();
+</script>
+</body>
+</html>
