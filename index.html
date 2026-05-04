@@ -730,6 +730,14 @@
         }
       }
 
+      // One-off additional closed days by leave year
+      const extraClosedDays = { '2025': ['2026-01-02'] };
+      for (const dateStr of (extraClosedDays[leaveYearStart] ?? [])) {
+        if (!bh.find(b => b.dateStr === dateStr) && !closedFixed.find(c => c.dateStr === dateStr)) {
+          closedFixed.push({ dateStr, label: 'University closed day', type: 'closed' });
+        }
+      }
+
       closedDays = [...bh, ...closedFixed].sort((a, b) => a.dateStr.localeCompare(b.dateStr));
 
     } catch (e) {
