@@ -723,7 +723,8 @@
         for (let day = 27; day <= 31; day++) {
           const dateStr = `${yr}-12-${String(day).padStart(2,'0')}`;
           const d = parseDate(dateStr);
-          if (d >= from && d <= to && !bh.find(b => b.dateStr === dateStr)) {
+          const dow = d.getDay();
+          if (d >= from && d <= to && dow >= 1 && dow <= 5 && !bh.find(b => b.dateStr === dateStr)) {
             closedFixed.push({ dateStr, label: 'University closed day', type: 'closed' });
           }
         }
