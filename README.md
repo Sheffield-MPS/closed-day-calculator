@@ -6,7 +6,7 @@ Hosted at: https://sheffield-mps.github.io/closed-day-calculator/
 
 ## What it does
 
-UK employment law requires that part-time staff receive a fair pro-rata share of public holidays and closed days, regardless of which days of the week those holidays fall on. For example, a member of staff who doesn't work Mondays will never benefit from a Monday bank holiday, so they should receive equivalent time back as additional annual leave.
+The University believes that part-time staff should receive a fair pro-rata share of public holidays and closed days, regardless of which days of the week those holidays fall on. For example, a member of staff who doesn't work Mondays will never benefit from a Monday bank holiday, so they should receive equivalent time back as additional annual leave.
 
 This tool calculates whether a member of staff is owed extra leave, or has over-benefited, based on:
 
